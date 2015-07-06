@@ -1,0 +1,63 @@
+require "spec_helper"
+
+describe TreeBuilder do
+  context "initialize" do
+    it "initializes a tree" do
+      tree = TreeBuilderChargebackRates.new("cb_rates_tree", "cb_rates", {})
+      tree.should be_a_kind_of(TreeBuilder)
+      tree.name.should == :cb_rates_tree
+    end
+
+    it "sets sandbox hash that can be accessed by other methods in the class" do
+      sb = {}
+      tree = TreeBuilderChargebackRates.new("cb_rates_tree", "cb_rates", sb)
+      tree.should be_a_kind_of(TreeBuilder)
+      tree.name.should == :cb_rates_tree
+      sb.has_key?(:trees)
+      sb[:trees].has_key?(:cb_rates_tree)
+    end
+  end
+
+  context "title_and_tip" do
+    it "sets title and tooltip for the passed in root node" do
+      title, tooltip, icon = TreeBuilder.root_options(:cb_rates_tree)
+      title.should    == "Rates"
+      tooltip.should  == "Rates"
+      icon.should be_nil
+    end
+  end
+
+  context "build_tree" do
+    it "builds tree object and sets all settings and add nodes to tree object" do
+      tree = TreeBuilderChargebackRates.new("cb_rates_tree", "cb_rates", {})
+      nodes = [{:key      => "root",
+                :children => [],
+                :expand   => true,
+                :title    => "Rates",
+                :tooltip  => "Rates",
+                :icon     => "folder.png"
+              }]
+      tree.locals_for_render.has_key?(:json_tree)
+      tree.locals_for_render[:json_tree].should == nodes.to_json
+    end
+  end
+
+  context "#locals_for_render" do
+    it "returns the active node x_node from the TreeState as select_node" do
+      tree = TreeBuilderChargebackRates.new("cb_rates_tree", "cb_rates", {})
+
+      active_node = 'foobar'
+      TreeState.any_instance.stub(:x_node).and_return(active_node)
+
+      expect(tree.locals_for_render[:select_node]).to eq(active_node)
+    end
+  end
+
+  context '#x_get_child_nodes' do
+    it 'returns for Hash models' do
+      builder = TreeBuilderChargebackRates.new("cb_rates_tree", "cb_rates", {})
+      nodes = builder.x_get_child_nodes('tf_xx-10')
+      expect(nodes).to be_empty
+    end
+  end
+end
